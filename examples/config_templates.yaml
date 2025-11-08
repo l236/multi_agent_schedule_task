@@ -1,0 +1,233 @@
+---
+# Configuration Templates for Multi-Agent Schedule Task Framework
+
+# Data Analysis Pipeline Template
+data_analysis_pipeline:
+  name: "Data Analysis Pipeline"
+  description: "Automated pipeline for data processing, analysis, and reporting"
+  steps:
+    - id: load_data
+      name: "Load Data"
+      tool: "data_loader"
+      parameters:
+        source: "database"
+        query: "SELECT * FROM sales_data WHERE date >= '2024-01-01'"
+      retry_count: 3
+      retry_delay: 2.0
+
+    - id: clean_data
+      name: "Clean Data"
+      tool: "data_processor"
+      parameters:
+        operations: ["remove_nulls", "normalize_dates", "validate_schema"]
+      dependencies: ["load_data"]
+      retry_count: 2
+
+    - id: analyze_data
+      name: "Analyze Data"
+      tool: "data_analyzer"
+      parameters:
+        metrics: ["revenue_trend", "customer_segments", "product_performance"]
+      dependencies: ["clean_data"]
+
+    - id: generate_report
+      name: "Generate Report"
+      tool: "generation"
+      parameters:
+        type: "report"
+        data:
+          title: "Monthly Sales Analysis Report"
+          sections:
+            - title: "Executive Summary"
+              content: "Summary of key findings"
+            - title: "Data Analysis"
+              content: "Detailed analysis results"
+            - title: "Recommendations"
+              content: "Business recommendations"
+      dependencies: ["analyze_data", "clean_data"]
+
+  parallel_groups:
+    - ["analyze_data", "clean_data"]  # These can run in parallel
+
+# Document Processing Pipeline Template
+document_processing_pipeline:
+  name: "Document Processing Pipeline"
+  description: "Process documents, extract information, and generate insights"
+  steps:
+    - id: extract_text
+      name: "Extract Text"
+      tool: "doc_parser"
+      parameters:
+        file_path: "input_document.pdf"
+        extract_images: true
+      retry_count: 2
+      fallback_tools: ["ocr_parser"]
+
+    - id: classify_document
+      name: "Classify Document"
+      tool: "document_classifier"
+      parameters:
+        categories: ["contract", "invoice", "report", "email"]
+      dependencies: ["extract_text"]
+
+    - id: extract_entities
+      name: "Extract Entities"
+      tool: "entity_extractor"
+      parameters:
+        entity_types: ["PERSON", "ORG", "DATE", "MONEY", "PERCENT"]
+      dependencies: ["extract_text"]
+
+    - id: generate_summary
+      name: "Generate Summary"
+      tool: "generation"
+      parameters:
+        type: "summary"
+        data:
+          source_data: "extracted_text"
+          key_points: ["Document type", "Key entities", "Important dates"]
+      dependencies: ["classify_document", "extract_entities"]
+
+  parallel_groups:
+    - ["classify_document", "extract_entities"]
+
+# Customer Support Automation Template
+customer_support_pipeline:
+  name: "Customer Support Automation"
+  description: "Automate customer inquiry processing and response generation"
+  steps:
+    - id: analyze_inquiry
+      name: "Analyze Customer Inquiry"
+      tool: "text_analyzer"
+      parameters:
+        text: "customer_message"
+        analysis_type: "sentiment_and_intent"
+      retry_count: 1
+
+    - id: search_knowledge_base
+      name: "Search Knowledge Base"
+      tool: "retrieval"
+      parameters:
+        query: "customer_inquiry_keywords"
+        source: "support_kb"
+      dependencies: ["analyze_inquiry"]
+
+    - id: generate_response
+      name: "Generate Response"
+      tool: "generation"
+      parameters:
+        type: "response"
+        data:
+          inquiry_type: "from_analysis"
+          relevant_info: "from_kb_search"
+          tone: "professional_helpful"
+      dependencies: ["analyze_inquiry", "search_knowledge_base"]
+      condition: "dep_search_knowledge_base"  # Only if KB search succeeds
+
+    - id: escalate_if_needed
+      name: "Escalate if Needed"
+      tool: "decision_maker"
+      parameters:
+        criteria: ["complexity_score > 0.8", "sentiment_negative", "no_kb_match"]
+        action: "escalate_to_human"
+      dependencies: ["generate_response"]
+
+# Quality Assurance Pipeline Template
+qa_pipeline:
+  name: "Quality Assurance Pipeline"
+  description: "Automated testing and quality checks for software deliverables"
+  steps:
+    - id: run_unit_tests
+      name: "Run Unit Tests"
+      tool: "test_runner"
+      parameters:
+        test_type: "unit"
+        coverage_threshold: 80
+      retry_count: 1
+
+    - id: run_integration_tests
+      name: "Run Integration Tests"
+      tool: "test_runner"
+      parameters:
+        test_type: "integration"
+        environment: "staging"
+      dependencies: ["run_unit_tests"]
+
+    - id: security_scan
+      name: "Security Scan"
+      tool: "security_scanner"
+      parameters:
+        scan_type: "sast"
+        severity_threshold: "medium"
+      dependencies: ["run_unit_tests"]
+
+    - id: performance_test
+      name: "Performance Test"
+      tool: "performance_tester"
+      parameters:
+        load_profile: "normal"
+        response_time_threshold: 2000
+      dependencies: ["run_integration_tests"]
+
+    - id: generate_qa_report
+      name: "Generate QA Report"
+      tool: "generation"
+      parameters:
+        type: "report"
+        data:
+          title: "Quality Assurance Report"
+          sections:
+            - title: "Test Results"
+              content: "Unit and integration test outcomes"
+            - title: "Security Findings"
+              content: "Security scan results"
+            - title: "Performance Metrics"
+              content: "Performance test results"
+            - title: "Recommendations"
+              content: "Suggested improvements"
+      dependencies: ["run_unit_tests", "run_integration_tests", "security_scan", "performance_test"]
+
+  parallel_groups:
+    - ["run_integration_tests", "security_scan"]
+    - ["security_scan", "performance_test"]
+
+# Content Moderation Pipeline Template
+content_moderation_pipeline:
+  name: "Content Moderation Pipeline"
+  description: "Automated content analysis and moderation for user-generated content"
+  steps:
+    - id: analyze_content
+      name: "Analyze Content"
+      tool: "content_analyzer"
+      parameters:
+        content: "user_input"
+        checks: ["toxicity", "spam", "hate_speech", "adult_content"]
+      retry_count: 2
+
+    - id: check_compliance
+      name: "Check Compliance"
+      tool: "compliance_checker"
+      parameters:
+        content: "user_input"
+        policies: ["community_guidelines", "legal_requirements"]
+      dependencies: ["analyze_content"]
+
+    - id: moderate_content
+      name: "Moderate Content"
+      tool: "content_moderator"
+      parameters:
+        action: "auto_decide"
+        thresholds:
+          toxicity: 0.8
+          spam: 0.7
+      dependencies: ["analyze_content", "check_compliance"]
+
+    - id: log_moderation
+      name: "Log Moderation Action"
+      tool: "audit_logger"
+      parameters:
+        action: "moderation_decision"
+        details: "moderation_results"
+      dependencies: ["moderate_content"]
+
+  parallel_groups:
+    - ["analyze_content", "check_compliance"]

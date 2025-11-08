@@ -1,0 +1,10 @@
+include README.md
+include requirements.txt
+include example_config.yaml
+include sample_contract.txt
+include examples/*.yaml
+include integrations/*.py
+recursive-include multi_agent_schedule_task *.py
+global-exclude *.pyc
+global-exclude __pycache__
+global-exclude .git*

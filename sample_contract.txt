@@ -1,0 +1,35 @@
+This is a sample contract document for testing the multi-agent task scheduling system.
+
+CONTRACT AGREEMENT
+
+This Contract Agreement ("Agreement") is entered into on [Date] by and between:
+
+Party A: ABC Corporation
+Address: 123 Business Street, City, State 12345
+
+Party B: XYZ Services LLC
+Address: 456 Service Avenue, City, State 67890
+
+1. SERVICES
+Party B agrees to provide consulting services to Party A including but not limited to:
+- Business analysis
+- Process optimization
+- Technology implementation
+
+2. COMPENSATION
+Party A shall pay Party B the sum of $50,000 for the services rendered.
+
+3. TERM
+This Agreement shall commence on the effective date and continue for 12 months.
+
+4. CONFIDENTIALITY
+Both parties agree to maintain confidentiality of proprietary information.
+
+5. GOVERNING LAW
+This Agreement shall be governed by the laws of the State of California.
+
+Signatures:
+
+Party A: ___________________________ Date: __________
+
+Party B: ___________________________ Date: __________
