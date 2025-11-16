@@ -1,45 +1,64 @@
-name: "Contract Analysis Pipeline"
-description: "Automated pipeline for parsing contracts, retrieving regulations, and generating analysis reports"
+name: "Document Analysis and Reporting Pipeline"
+description: "Automated pipeline for parsing documents from emails or local files, retrieving information, generating analysis reports, and exporting PDFs"
 
 steps:
-  - id: parse_contract
-    name: "Parse Contract Document"
+  - id: parse_email_documents
+    name: "Parse Documents from Email Attachment"
     tool: "doc_parser"
     parameters:
-      file_path: "sample_contract.txt"
+      file_path: "./sample_email.eml"  # Email file with document attachment
+      doc_keywords:
+        english: ['contract', 'agreement']
+        chinese: ['合同', '协议']
     retry_count: 2
     retry_delay: 1.0
     fallback_tools: ["ocr_parser"]
+
+  - id: parse_local_document
+    name: "Parse Local PDF Document"
+    tool: "doc_parser"
+    parameters:
+      file_path: "/Users/likangjia/multi_agent_schedule_task/email_attachments/626_劳动合同-新入职_23-10版_04.pdf" # Example of a local file
+      doc_keywords:
+        english: ['report', 'invoice']
+        chinese: ['报告', '发票']
+    retry_count: 1
 
   - id: retrieve_regulations
     name: "Retrieve Relevant Regulations"
     tool: "retrieval"
     parameters:
-      query: "contract law regulatory compliance"
-    dependencies: ["parse_contract"]
+      query: "contract law regulatory compliance data privacy"
+    dependencies: ["parse_email_documents"] # Depends on the email parsing
     retry_count: 3
     retry_delay: 2.0
 
   - id: generate_analysis
-    name: "Generate Analysis Report"
+    name: "Generate Document Analysis Report"
     tool: "generation"
     parameters:
       type: "analysis"
       data:
-        subject: "Contract Compliance Analysis"
-    dependencies: ["parse_contract", "retrieve_regulations"]
+        subject: "Document Compliance and Regulatory Analysis"
+        findings: []
+        recommendations: []
+      output_format: "pdf"
+      output_path: "document_analysis_report.pdf"
+    dependencies: ["parse_email_documents", "retrieve_regulations"]
     condition: "dep_retrieve_regulations"  # Only run if retrieval succeeded
     retry_count: 1
 
-  - id: generate_summary
+  - id: generate_executive_summary
     name: "Generate Executive Summary"
     tool: "generation"
     parameters:
       type: "summary"
       data:
-        key_points: ["Contract parsed successfully", "Regulations retrieved", "Analysis completed"]
+        key_points: ["Email documents parsed", "Regulations retrieved", "Analysis report generated"]
+      output_format: "pdf"
+      output_path: "executive_summary.pdf"
     dependencies: ["generate_analysis"]
 
 parallel_groups:
-  - ["parse_contract"]  # Can run in parallel with other independent steps
-  - ["retrieve_regulations", "generate_analysis"]  # These can run in parallel after parse_contract
+  - ["parse_email_documents", "parse_local_document"]
+  - ["retrieve_regulations"]

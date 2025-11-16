@@ -163,6 +163,26 @@ registry = ToolRegistry()
 registry.register_tool("doc_parser", DocParseTool)
 ```
 
+### 3. Configure Email Server Integration (Optional)
+
+For automated email processing, configure email server access:
+
+```yaml
+steps:
+  - id: fetch_emails
+    tool: "doc_parser"
+    parameters:
+      email_config:
+        server: "imap.gmail.com"
+        port: 993
+        username: "your-email@example.com"
+        password: "your-app-password"
+        mailbox: "INBOX"
+        search_criteria: "UNSEEN FROM legal@company.com"
+        max_emails: 10
+        mark_as_read: true
+```
+
 ### 3. Execute Task
 
 ```python

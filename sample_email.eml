@@ -1,0 +1,37 @@
+Return-Path: <sender@example.com>
+Received: by smtp.example.com with SMTP id abc123
+Date: Mon, 16 Nov 2025 12:00:00 +0100
+From: Legal Department <legal@company.com>
+To: Compliance Team <compliance@company.com>
+Subject: New Contract for Review - Service Agreement
+Message-ID: <123456789@example.com>
+Content-Type: multipart/mixed; boundary="boundary123"
+
+--boundary123
+Content-Type: text/plain; charset=UTF-8
+
+Dear Compliance Team,
+
+Please review the attached service agreement contract for regulatory compliance.
+
+This contract was received from ABC Corporation and needs to be analyzed for:
+- Contract law compliance
+- Data privacy regulations
+- Regulatory requirements
+
+Please process this through the automated analysis system.
+
+Best regards,
+Legal Department
+
+--boundary123
+Content-Type: application/pdf; name="service_contract.pdf"
+Content-Disposition: attachment; filename="service_contract.pdf"
+Content-Transfer-Encoding: base64
+
+JVBERi0xLjQKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2Jq
+CjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKPj4KZW5kb2Jq
+CjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovQ29udGVudHMgNCAwIFIKPj4KZW5kb2Jq
+CjQgMCBvYmoKPDwKL0xlbmd0aCA0ND4+CnN0cmVhbQpCVAovRjEgMjQgVGYKNjAgNzIwIFRkCihTZXJ2aWNlIENvbnRyYWN0IEFncmVlbWVudCkgVGoKRVQKZW5kc3RyZWFtCmVuZG9iagp4cmVmCjAgNQowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMTkgMDAwMDAgbiAKMDAwMDAwMDA5MyAwMDAwMCBuIAowMDAwMDAwMTQ3IDAwMDAwIG4gCjAwMDAwMDAyMzMgMDAwMDAgbiAKdHJhaWxlcgo8PAovU2l6ZSA1Ci9Sb290IDEgMCBSCj4+CnN0YXJ0eHJlZgozMDEKJSVFT0YK
+
+--boundary123--

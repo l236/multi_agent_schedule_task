@@ -23,6 +23,13 @@ from typing import Optional
 # Add the current directory to Python path
 sys.path.insert(0, str(Path(__file__).parent))
 
+# Load environment variables from .env file if it exists
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # dotenv not available, continue without it
+
 from multi_agent_schedule_task import TaskScheduler, ToolRegistry, ContextManager
 from multi_agent_schedule_task.config import ConfigParser
 from multi_agent_schedule_task.tools.doc_parser import DocParseTool

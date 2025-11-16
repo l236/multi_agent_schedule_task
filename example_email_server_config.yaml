@@ -1,0 +1,81 @@
+name: "Email Server Contract Analysis Pipeline"
+description: "Automated pipeline for fetching emails from server, parsing contracts from attachments, retrieving regulations, generating analysis reports, and exporting PDFs"
+
+steps:
+  - id: fetch_emails
+    name: "Fetch Emails from Server"
+    tool: "doc_parser"
+    parameters:
+      email_config:
+        server: "${EMAIL_SERVER:imap.gmail.com}"  # IMAP server (supports env vars)
+        port: "${EMAIL_PORT:993}"  # IMAP SSL port
+        username: "${EMAIL_USERNAME}"  # Your email address (REQUIRED - set in .env)
+        password: "${EMAIL_PASSWORD}"  # App password (REQUIRED - set in .env)
+        mailbox: "${EMAIL_MAILBOX:INBOX}"  # Mailbox to check
+        search_criteria: "${EMAIL_SEARCH_CRITERIA:UNSEEN}"  # Search criteria
+        max_emails: "${EMAIL_MAX_EMAILS:5}"  # Maximum emails to process
+        mark_as_read: "${EMAIL_MARK_AS_READ:true}"  # Mark processed emails as read
+    retry_count: 2
+    retry_delay: 5.0
+
+  - id: retrieve_regulations
+    name: "Retrieve Relevant Regulations"
+    tool: "retrieval"
+    parameters:
+      query: "contract law regulatory compliance data privacy GDPR CCPA"
+    dependencies: ["fetch_emails"]
+    retry_count: 3
+    retry_delay: 2.0
+
+  - id: generate_analysis
+    name: "Generate Contract Analysis Report"
+    tool: "generation"
+    parameters:
+      type: "analysis"
+      data:
+        subject: "Contract Compliance and Regulatory Analysis"
+        findings: []
+        recommendations: []
+      output_format: "pdf"
+      output_path: "outputs/email_contract_analysis_report.pdf"
+    dependencies: ["fetch_emails", "retrieve_regulations"]
+    condition: "dep_retrieve_regulations"
+    retry_count: 1
+
+  - id: generate_executive_summary
+    name: "Generate Executive Summary"
+    tool: "generation"
+    parameters:
+      type: "summary"
+      data:
+        key_points: ["Emails fetched from server", "Contracts extracted from attachments", "Regulations retrieved", "Analysis report generated", "PDF exported"]
+      output_format: "pdf"
+      output_path: "outputs/email_executive_summary.pdf"
+    dependencies: ["generate_analysis"]
+
+parallel_groups:
+  - ["fetch_emails"]
+  - ["retrieve_regulations", "generate_analysis"]
+
+# Email Configuration Notes:
+# --------------------------
+# Gmail Setup:
+# 1. Enable 2-factor authentication on your Google account
+# 2. Generate an App Password: https://support.google.com/accounts/answer/185833
+# 3. Use the App Password (not your regular password) in the config
+#
+# Outlook/Office 365 Setup:
+# - Server: outlook.office365.com
+# - Use your regular password or app password
+#
+# Search Criteria Examples:
+# - "UNSEEN" - Unread emails only
+# - "FROM sender@company.com" - Emails from specific sender
+# - "SUBJECT contract" - Emails with "contract" in subject
+# - "SINCE 01-Jan-2024" - Emails since specific date
+# - "UNSEEN FROM legal@company.com SUBJECT contract" - Combine criteria
+#
+# Security Notes:
+# - Store credentials securely (environment variables, secret management)
+# - Consider using OAuth2 for better security
+# - Limit max_emails to prevent processing too many emails at once

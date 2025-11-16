@@ -4,6 +4,8 @@ YAML configuration parsing for task flows.
 
 import yaml
 import logging
+import os
+import re
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 
@@ -50,6 +52,9 @@ class ConfigParser:
         try:
             with open(config_path, 'r', encoding='utf-8') as f:
                 config_data = yaml.safe_load(f)
+
+            # Substitute environment variables
+            config_data = ConfigParser._substitute_env_vars(config_data)
 
             return ConfigParser._parse_task_flow(config_data)
 
@@ -135,3 +140,42 @@ class ConfigParser:
                 errors.append(f"Step '{step.id}' does not specify a tool")
 
         return errors
+
+    @staticmethod
+    def _substitute_env_vars(data: Any) -> Any:
+        """
+        Recursively substitute environment variables in configuration data.
+
+        Supports syntax: ${VAR_NAME:default_value}
+        """
+        if isinstance(data, dict):
+            return {key: ConfigParser._substitute_env_vars(value) for key, value in data.items()}
+        elif isinstance(data, list):
+            return [ConfigParser._substitute_env_vars(item) for item in data]
+        elif isinstance(data, str):
+            return ConfigParser._substitute_env_var_in_string(data)
+        else:
+            return data
+
+    @staticmethod
+    def _substitute_env_var_in_string(text: str) -> str:
+        """Substitute environment variables in a string."""
+        # Pattern matches ${VAR:default} or ${VAR}
+        pattern = r'\$\{([^:}]+)(?::([^}]*))?\}'
+
+        def replace_var(match):
+            var_name = match.group(1)
+            default_value = match.group(2) if match.group(2) is not None else ""
+
+            # Get environment variable
+            env_value = os.getenv(var_name)
+            if env_value is not None:
+                return env_value
+            elif default_value:
+                return default_value
+            else:
+                # Variable not found and no default - leave as is but log warning
+                logger.warning(f"Environment variable '{var_name}' not found and no default provided")
+                return match.group(0)  # Return original string
+
+        return re.sub(pattern, replace_var, text)
