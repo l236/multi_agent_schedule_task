@@ -25,7 +25,11 @@ multi_agent_schedule_task/
     ├── __init__.py
     ├── doc_parser.py        # Document parsing tool
     ├── retrieval.py         # Information retrieval tool
-    └── generation.py        # Content generation tool
+    ├── generation.py        # Content generation tool
+    ├── http_fetcher.py      # HTTP web fetching tool
+    ├── web_analyzer.py      # Web content analysis tool
+    ├── text_exporter.py     # Text file exporter tool
+    └── pdf_exporter.py      # PDF file exporter tool
 ```
 
 ## Installation
@@ -98,6 +102,10 @@ Core dependencies (automatically installed):
 - autogen>=0.8.0: Multi-agent collaboration
 - python-dotenv>=1.0.0: Environment configuration
 - pyyaml>=6.0: YAML configuration support
+- requests>=2.0.0: HTTP requests for web fetching
+- beautifulsoup4>=4.0.0: HTML parsing and analysis
+- lxml>=4.0.0: XML/HTML processing backend
+- reportlab>=4.0.0: PDF generation
 
 Optional dependencies:
 - fastapi>=0.100.0, uvicorn>=0.20.0: For HTTP API server
@@ -252,16 +260,71 @@ steps:                         # List of steps
 parallel_groups: list         # Groups of parallel steps
 ```
 
+### Parameter Interpolation
+
+You can reference outputs from previous steps using the syntax `${step_id.field}`:
+
+```yaml
+steps:
+  - id: fetch_page
+    tool: "http_fetcher"
+    parameters:
+      url: "https://example.com"
+  
+  - id: analyze
+    tool: "web_analyzer"
+    parameters:
+      content: "${fetch_page.content}"  # References previous step output
+    dependencies: ["fetch_page"]
+  
+  - id: export
+    tool: "text_exporter"
+    parameters:
+      filename: "output.txt"
+      content: |
+        URL: ${fetch_page.url}
+        Title: ${fetch_page.title}
+        Summary: ${analyze.summary}
+    dependencies: ["fetch_page", "analyze"]
+```
+
+The scheduler automatically resolves these references when executing steps.
+
 ## Example Tools
 
 ### Document Parser
-Parses documents and extracts text content.
+Parses documents (PDF, email, plain text) and extracts text content.
+- Supports email attachments and server-based email fetching
+- Detects file types and applies appropriate parsing
 
 ### Retrieval Tool
-Retrieves relevant information based on queries.
+Retrieves relevant information based on queries from a knowledge base.
 
 ### Generation Tool
 Generates content such as reports, summaries, and analysis.
+
+### HTTP Fetcher (New)
+Fetches content from URLs and extracts normalized text.
+- Supports HTML parsing and content extraction
+- Returns page title, content, and metadata
+- Example usage: web scraping and data collection
+
+### Web Analyzer (New)
+Analyzes text content and extracts structured information.
+- Generates summaries of text
+- Extracts keywords using frequency analysis
+- Identifies links (HTTP/HTTPS URLs)
+- Example usage: content analysis and information extraction
+
+### Text Exporter (New)
+Exports text content to `.txt` files.
+- Useful for saving reports and analysis results
+- Supports parameter interpolation from previous steps
+
+### PDF Exporter
+Exports text content to PDF files using ReportLab.
+- Handles text wrapping and formatting
+- Example usage: generating PDF reports
 
 ## Deployment Options
 
@@ -339,6 +402,39 @@ def process_document(request, doc_id):
 ```
 
 ## Running the Example
+
+### Web Scraping & Analysis Example
+
+Fetch a web page, analyze its content, and export results to a text file:
+
+```bash
+python main.py examples/web_scrape_analysis_workflow.yaml
+```
+
+This executes the following pipeline:
+1. **Fetch Page** - Retrieves HTML content from a URL using `http_fetcher`
+2. **Analyze Page** - Extracts summary, keywords, and links using `web_analyzer`
+3. **Export Report** - Saves the analysis results to `outputs/web_page_analysis_report.txt`
+
+Output file example:
+```
+# Web Page Analysis Report
+
+## Page URL
+https://google.com
+
+## Page Title
+Google
+
+## Page Summary
+Google Suche Bilder
+
+## Keywords
+['google', 'suche', 'bilder', 'maps', 'play', 'youtube', 'news', 'gmail', 'drive', 'mehr']
+
+## Links
+[]
+```
 
 ### Local Execution
 ```bash
