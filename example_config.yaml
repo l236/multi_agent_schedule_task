@@ -2,17 +2,17 @@ name: "Document Analysis and Reporting Pipeline"
 description: "Automated pipeline for parsing documents from emails or local files, retrieving information, generating analysis reports, and exporting PDFs"
 
 steps:
-  - id: parse_email_documents
-    name: "Parse Documents from Email Attachment"
-    tool: "doc_parser"
-    parameters:
-      file_path: "./sample_email.eml"  # Email file with document attachment
-      doc_keywords:
-        english: ['contract', 'agreement']
-        chinese: ['合同', '协议']
-    retry_count: 2
-    retry_delay: 1.0
-    fallback_tools: ["ocr_parser"]
+  # - id: parse_email_documents
+  #   name: "Parse Documents from Email Attachment"
+  #   tool: "doc_parser"
+  #   parameters:
+  #     file_path: "./sample_email.eml"  # Email file with document attachment
+  #     doc_keywords:
+  #       english: ['contract', 'agreement']
+  #       chinese: ['合同', '协议']
+  #   retry_count: 2
+  #   retry_delay: 1.0
+  #   fallback_tools: ["ocr_parser"]
 
   - id: parse_local_document
     name: "Parse Local PDF Document"
@@ -24,40 +24,40 @@ steps:
         chinese: ['报告', '发票']
     retry_count: 1
 
-  - id: retrieve_regulations
-    name: "Retrieve Relevant Regulations"
-    tool: "retrieval"
-    parameters:
-      query: "contract law regulatory compliance data privacy"
-    dependencies: ["parse_email_documents"] # Depends on the email parsing
-    retry_count: 3
-    retry_delay: 2.0
+  # - id: retrieve_regulations
+  #   name: "Retrieve Relevant Regulations"
+  #   tool: "retrieval"
+  #   parameters:
+  #     query: "contract law regulatory compliance data privacy"
+  #   dependencies: ["parse_email_documents"] # Depends on the email parsing
+  #   retry_count: 3
+  #   retry_delay: 2.0
 
-  - id: generate_analysis
-    name: "Generate Document Analysis Report"
-    tool: "generation"
-    parameters:
-      type: "analysis"
-      data:
-        subject: "Document Compliance and Regulatory Analysis"
-        findings: []
-        recommendations: []
-      output_format: "pdf"
-      output_path: "document_analysis_report.pdf"
-    dependencies: ["parse_email_documents", "retrieve_regulations"]
-    condition: "dep_retrieve_regulations"  # Only run if retrieval succeeded
-    retry_count: 1
+  # - id: generate_analysis
+  #   name: "Generate Document Analysis Report"
+  #   tool: "generation"
+  #   parameters:
+  #     type: "analysis"
+  #     data:
+  #       subject: "Document Compliance and Regulatory Analysis"
+  #       findings: []
+  #       recommendations: []
+  #     output_format: "pdf"
+  #     output_path: "document_analysis_report.pdf"
+  #   dependencies: ["parse_email_documents", "retrieve_regulations"]
+  #   condition: "dep_retrieve_regulations"  # Only run if retrieval succeeded
+  #   retry_count: 1
 
-  - id: generate_executive_summary
-    name: "Generate Executive Summary"
-    tool: "generation"
-    parameters:
-      type: "summary"
-      data:
-        key_points: ["Email documents parsed", "Regulations retrieved", "Analysis report generated"]
-      output_format: "pdf"
-      output_path: "executive_summary.pdf"
-    dependencies: ["generate_analysis"]
+  # - id: generate_executive_summary
+  #   name: "Generate Executive Summary"
+  #   tool: "generation"
+  #   parameters:
+  #     type: "summary"
+  #     data:
+  #       key_points: ["Email documents parsed", "Regulations retrieved", "Analysis report generated"]
+  #     output_format: "pdf"
+  #     output_path: "executive_summary.pdf"
+  #   dependencies: ["generate_analysis"]
 
 parallel_groups:
   - ["parse_email_documents", "parse_local_document"]

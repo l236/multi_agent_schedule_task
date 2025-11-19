@@ -273,6 +273,8 @@ class TaskScheduler:
                            step: StepConfig,
                            step_results: Dict[str, StepResult]) -> Any:
         """Prepare input data for step execution."""
+        import re
+        
         # Merge parameters with dependency outputs
         input_data = step.parameters.copy()
 
@@ -280,7 +282,44 @@ class TaskScheduler:
             if dep in step_results and step_results[dep].output is not None:
                 input_data[f"dep_{dep}_output"] = step_results[dep].output
 
+        # Recursively replace step output references like ${step_id.field}
+        input_data = self._resolve_step_references(input_data, step_results)
+        
         return input_data
+    
+    def _resolve_step_references(self, data: Any, step_results: Dict[str, StepResult]) -> Any:
+        """Recursively resolve step output references in data."""
+        import re
+        
+        if isinstance(data, dict):
+            return {key: self._resolve_step_references(value, step_results) for key, value in data.items()}
+        elif isinstance(data, list):
+            return [self._resolve_step_references(item, step_results) for item in data]
+        elif isinstance(data, str):
+            # Pattern matches ${step_id.field} or ${step_id}
+            pattern = r'\$\{([^}]+)\}'
+            
+            def replace_ref(match):
+                ref = match.group(1)
+                if '.' in ref:
+                    step_id, field = ref.split('.', 1)
+                    if step_id in step_results and step_results[step_id].output is not None:
+                        output = step_results[step_id].output
+                        if isinstance(output, dict) and field in output:
+                            return str(output[field])
+                        elif hasattr(output, field):
+                            return str(getattr(output, field))
+                    return match.group(0)  # Return original if not found
+                else:
+                    # Just step_id, return entire output
+                    step_id = ref
+                    if step_id in step_results and step_results[step_id].output is not None:
+                        return str(step_results[step_id].output)
+                    return match.group(0)
+            
+            return re.sub(pattern, replace_ref, data)
+        else:
+            return data
 
     def _check_condition(self, step: StepConfig, step_results: Dict[str, StepResult]) -> bool:
         """Check if step should be executed based on condition."""

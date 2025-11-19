@@ -30,11 +30,18 @@ try:
 except ImportError:
     pass  # dotenv not available, continue without it
 
-from multi_agent_schedule_task import TaskScheduler, ToolRegistry, ContextManager
+from multi_agent_schedule_task import TaskScheduler, ContextManager
+from multi_agent_schedule_task.registry import tool_registry as global_tool_registry
 from multi_agent_schedule_task.config import ConfigParser
 from multi_agent_schedule_task.tools.doc_parser import DocParseTool
 from multi_agent_schedule_task.tools.retrieval import RetrievalTool
 from multi_agent_schedule_task.tools.generation import GenerationTool
+# Import the http_fetcher and web_analyzer modules so they register themselves on import
+try:
+    from multi_agent_schedule_task.tools import http_fetcher, web_analyzer, pdf_exporter, text_exporter  # noqa: F401
+except Exception:
+    # If import fails, continue; tools may already be registered elsewhere
+    pass
 
 
 def setup_logging(level: str = "INFO"):
@@ -53,14 +60,19 @@ def setup_logging(level: str = "INFO"):
 
 def create_scheduler(max_workers: int = 4, context_expiration: int = 3600) -> TaskScheduler:
     """Create and configure task scheduler."""
-    tool_registry = ToolRegistry()
+    # Use the global registry so modules that register themselves on import
+    # (like http_fetcher/web_analyzer) are available to the scheduler.
+    tool_registry = global_tool_registry
     context_manager = ContextManager(expiration_time=context_expiration)
     scheduler = TaskScheduler(tool_registry, context_manager, max_workers=max_workers)
 
-    # Register default tools
-    tool_registry.register_tool("doc_parser", DocParseTool)
-    tool_registry.register_tool("retrieval", RetrievalTool)
-    tool_registry.register_tool("generation", GenerationTool)
+    # Register default tools if they are not already registered
+    if not tool_registry.get_tool("doc_parser"):
+        tool_registry.register_tool("doc_parser", DocParseTool)
+    if not tool_registry.get_tool("retrieval"):
+        tool_registry.register_tool("retrieval", RetrievalTool)
+    if not tool_registry.get_tool("generation"):
+        tool_registry.register_tool("generation", GenerationTool)
 
     return scheduler
 

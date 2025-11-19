@@ -1,0 +1,43 @@
+name: "Web Scrape Analysis Workflow"
+description: "Fetch a web page, analyze it, and generate a report"
+steps:
+  - id: fetch_page
+    name: "Fetch Page"
+    tool: "http_fetcher"
+    parameters:
+      url: "https://google.com"
+      timeout: 10
+    retry_count: 2
+
+  - id: analyze_page
+    name: "Analyze Page"
+    tool: "web_analyzer"
+    parameters:
+      content: "${fetch_page.content}"
+    dependencies: ["fetch_page"]
+
+  - id: export_txt
+    name: "Export Report as Text"
+    tool: "text_exporter"
+    parameters:
+      filename: "outputs/web_page_analysis_report.txt"
+      content: |
+        # Web Page Analysis Report
+
+        ## Page URL
+        ${fetch_page.url}
+
+        ## Page Title
+        ${fetch_page.title}
+
+        ## Page Summary
+        ${analyze_page.summary}
+
+        ## Keywords
+        ${analyze_page.keywords}
+
+        ## Links
+        ${analyze_page.links}
+    dependencies: ["fetch_page", "analyze_page"]
+
+parallel_groups: []
